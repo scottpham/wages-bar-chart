@@ -1,14 +1,14 @@
 var mobileThreshold = 500, //set to 500 for testing
     aspect_width = 16,
-    aspect_height = 10,
+    aspect_height = 11,
     tickNumber = 10;
 
 //standard margins
 var margin = {
     top: 30,
-    right: 30,
+    right: 70,
     bottom: 20,
-    left: 175
+    left: 185
 };
 //jquery shorthand
 var $graphic = $('#graphic');
@@ -41,20 +41,26 @@ function draw_graphic(){
 
 function render(width) {
 
+    function checkWidth(width){
+        if (width<475){
+            $("#btn-group").attr("class", "btn-group-vertical");
+        }
+    }
+    
+    checkWidth(width);
+
     //empty object for storing mobile dependent variables
     var mobile = {};
     //check for mobile
     function ifMobile (w) {
         if(w < mobileThreshold){
             console.log("mobileThreshold reached");
-            mobile.fontSize = "8px";
-            margin.left = 135;
+            margin.left = 145;
             mobile.gap = .5;
             height = height * 1.5;
             // margin.right 
         }
         else{
-            mobile.fontSize = null;
             margin.left = 175;
             mobile.gap = 0.25;
         }
@@ -104,20 +110,22 @@ function render(width) {
         }
     }
 
+    var awardFormat = d3.format("$,.0f")
+
     //asynchronous csv call
-    d3.csv("complaints.csv", type, function(error, data) {
+    d3.csv("awards.csv", type, function(error, data) {
         //x domain is between 0 and max of the selected
-        x.domain([0, d3.max(data, function(d){ return d.complaints; })]);
+        x.domain([0, d3.max(data, function(d){ return d.awards; })]);
         //y domain sorts counties based on selected value
-        y.domain(data.sort( function (a, b) { return b.complaints - a.complaints; }).map(function(d) { return d.company}));
+        y.domain(data.sort( function (a, b) { return b.awards - a.awards; }).map(function(d) { return d.company}));
 
         //bars
         svg.selectAll(".bar")
               .data(data)
             .enter().append("rect")
-                .attr("class", "bar")
+                .attr("class", "bar bar-awards")
                 .attr("x", 0)
-                .attr("width", function(d){ return x(d.complaints); })
+                .attr("width", function(d){ return x(d.awards); })
                 .attr("y", function(d){ return y(d.company); })
                 .attr("height", y.rangeBand());
 
@@ -125,10 +133,10 @@ function render(width) {
         svg.selectAll(".label")
             .data(data)
             .enter().append("text")
-                .attr("class", "label")
-                .text(function(d) { return d.complaints; })
+                .attr("class", "label label-awards")
+                .text(function(d) { return awardFormat(d.awards); })
                 .attr("y", function(d){ return y(d.company) + (y.rangeBand()/2); })
-                .attr("x", function(d){ return x(d.complaints) + 3; })
+                .attr("x", function(d){ return x(d.awards) + 3; })
                 .attr("dy", 3);
 
         //append g for county names
@@ -140,8 +148,7 @@ function render(width) {
             .selectAll(".tick text")
                 .call(wrap, margin.left);
 
-        svg.selectAll(".tick").style("font-size", mobile.fontSize)
-
+        // svg.selectAll(".tick").style("font-size", mobile.fontSize)
     
     //end of csv call function
     });
@@ -159,9 +166,6 @@ function render(width) {
 
         d3.csv("awards.csv", type, function(error, data){
 
-            //check
-            console.log(data[4]);
-
             var delay = function(d, i){ return i * 100; };
 
             //reset domain
@@ -172,15 +176,12 @@ function render(width) {
             var ySort = y.domain(data.sort( function(a, b){ return b.awards - a.awards; })
                 .map(function(d){ return d.company; }));
 
-            console.log(data[4]);
-
             var svg = d3.select("#graphic");
 
             //dim ticks
 
             svg.selectAll(".tick")
                 .transition()
-                // .delay(delay)
                 .style("opacity",0)
                 .each("end",resetBarWidth);
 
@@ -189,19 +190,16 @@ function render(width) {
             function resetBarWidth(){
                 svg.selectAll(".bar")
                     .transition(400)
-                    // .delay(delay)
                     .attr("width", 0)
                     .each("end",buildAwards);
             }
 
             function buildAwards(){    
 
-
                 svg.selectAll(".bar")
                       .data(data)
                       .transition()
-                        .style("fill", "darkred")
-                        .attr("class", "bar awards")
+                        .attr("class", "bar bar-awards")
                         .attr("x", 0)
                         .attr("width", function(d){ return x(d.awards); })
                         .attr("y", function(d){ return y(d.company); })
@@ -211,8 +209,8 @@ function render(width) {
                 svg.selectAll(".label")
                     .data(data)
                         .transition()
-                        .attr("class", "label")
-                        .text(function(d) { return d.awards })
+                        .attr("class", "label label-awards")
+                        .text(function(d) { return awardFormat(d.awards); })
                         .attr("y", function(d){ return y(d.company) + (y.rangeBand()/2); })
                         .attr("x", function(d){ return x(d.awards) + 3; })
                         .attr("dy", 3);
@@ -224,10 +222,7 @@ function render(width) {
                     .attr("text-anchor", "end")
                     .selectAll(".tick text")
                     .call(wrap, margin.left);
-
             }
-
-
         });//end of d3.csv
 
     });//end button
@@ -246,8 +241,6 @@ d3.select("#complaints").on("click", function(){
 
         d3.csv("complaints.csv", type, function(error, data){
 
-            //check
-            console.log(data[4]);
 
             var delay = function(d, i){ return i * 100; };
 
@@ -259,36 +252,30 @@ d3.select("#complaints").on("click", function(){
             var ySort = y.domain(data.sort( function(a, b){ return b.complaints - a.complaints; })
                 .map(function(d){ return d.company; }));
 
-            console.log(data[4]);
-
             var svg = d3.select("#graphic");
 
             //dim ticks
-
             svg.selectAll(".tick")
                 .transition()
-                // .delay(delay)
                 .style("opacity",0)
                 .each("end",resetBarWidth);
 
             //reset bar width
-
             function resetBarWidth(){
                 svg.selectAll(".bar")
                     .transition(400)
-                    // .delay(delay)
                     .attr("width", 0)
                     .each("end",buildComplaints);
             }
 
+            //build out rest of chart
             function buildComplaints(){    
 
-
+                //bar widths
                 svg.selectAll(".bar")
                       .data(data)
                       .transition()
-                        .style("fill", "steelblue")
-                        .attr("class", "bar awards")
+                        .attr("class", "bar bar-complaints")
                         .attr("x", 0)
                         .attr("width", function(d){ return x(d.complaints); })
                         .attr("y", function(d){ return y(d.company); })
@@ -298,7 +285,7 @@ d3.select("#complaints").on("click", function(){
                 svg.selectAll(".label")
                     .data(data)
                         .transition()
-                        .attr("class", "label")
+                        .attr("class", "label label-complaints")
                         .text(function(d) { return d.complaints })
                         .attr("y", function(d){ return y(d.company) + (y.rangeBand()/2); })
                         .attr("x", function(d){ return x(d.complaints) + 3; })
