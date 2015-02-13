@@ -1,7 +1,6 @@
-var mobileThreshold = 500, //set to 500 for testing
+var mobileThreshold = 570, //set to 500 for testing
     aspect_width = 16,
-    aspect_height = 11,
-    tickNumber = 10;
+    aspect_height = 11;
 
 //standard margins
 var margin = {
@@ -42,7 +41,7 @@ function draw_graphic(){
 function render(width) {
 
     function checkWidth(width){
-        if (width<475){
+        if (width<mobileThreshold){
             $("#btn-group").attr("class", "btn-group-vertical");
         }
     }
@@ -56,13 +55,15 @@ function render(width) {
         if(w < mobileThreshold){
             console.log("mobileThreshold reached");
             margin.left = 145;
-            mobile.gap = .5;
+            mobile.gap = .3;
             height = height * 1.5;
+            aspect_height = 15;
             // margin.right 
         }
         else{
             margin.left = 175;
             mobile.gap = 0.25;
+            aspect_height = 11;
         }
     } 
     //call mobile check
@@ -246,7 +247,7 @@ d3.select("#complaints").on("click", function(){
 
             //reset domain
             x.domain([0, d3.max(data, function(d){ return d.complaints; })]);
-            y.domain(data.sort( function (a, b) { return b.complaints - a.complaints; }).map(function(d) { return d.company}));
+            y.domain(data.sort( function (a, b) { return b.complaints - a.complaints; }).map(function(d) { return d.company; }));
 
             //resort the counties
             var ySort = y.domain(data.sort( function(a, b){ return b.complaints - a.complaints; })
@@ -321,7 +322,7 @@ d3.select("#complaints").on("click", function(){
             word,
             line = [],
             lineNumber = 0,
-            lineHeight = 1.3, // ems
+            lineHeight = 1.2, // gap between breaks in ems
             y = text.attr("y"),
             dy = parseFloat(text.attr("dy")),
             tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
